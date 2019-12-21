@@ -9,15 +9,15 @@ Add-LocalGroupMember -Group Administrators -Member "$domain\$username"
 Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # Install VS Pro
-choco install visualstudio2019professional
+choco install visualstudio2019professional -y
 
 # Install Browsers
-choco install googlechrome
-choco install firefox
+choco install googlechrome -y
+choco install firefox -y
 
 #Install applications
-choco install postman
-choco install microsoftazurestorageexplorer
-choco install filezilla
-choco install servicebusexplorer
-choco install nscp
+choco install postman -y
+choco install microsoftazurestorageexplorer -y
+choco install filezilla -y
+choco install servicebusexplorer -y
+choco install nscp -y
