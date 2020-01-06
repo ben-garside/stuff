@@ -13,6 +13,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.We
 
 # Install VS Pro
 choco install visualstudio2019professional -y
+choco install classic-shell -y
 
 # Install Browsers
 choco install googlechrome -y
