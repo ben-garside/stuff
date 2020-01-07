@@ -35,3 +35,6 @@ choco install urlrewrite --force -y
 
 # AAR
 Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST'  -filter "system.webServer/proxy" -name "enabled" -value "True"
+
+# Disable IE ESC
+# TODO
