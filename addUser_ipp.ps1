@@ -95,3 +95,9 @@ foreach($file in $files){
     Rename-Item -Path "$path\$file" -NewName "$($matches[2]).bak"
 }
 
+# Update SQL auth mode to Mixed via REG and restart the service
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQLServer" -Name LoginMode -Value 2
+Restart-Service -Name MSSQLSERVER
+while((Get-Service -Name MSSQLSERVER).Status -ne 'running'){
+    sleep 2
+}
