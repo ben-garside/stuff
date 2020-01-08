@@ -1,9 +1,13 @@
 Param(
     $username,
-    $domain
+    $domain,
+    $blob,
+    $path = "f:\SQL\backups"
 )
 
-Add-LocalGroupMember -Group Administrators -Member "$domain\$username"
+$AdminGroup = [ADSI]"WinNT://$env:computername/Administrators,group"
+$User = [ADSI]"WinNT://$domain/$username,user"
+$AdminGroup.Add($User.Path)
 
 # Init and disks
 Get-Disk | Where-Object partitionstyle -eq 'raw' | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -FileSystem NTFS -Confirm:$false
@@ -44,8 +48,50 @@ Set-ItemProperty -Path $UserKey -Name "IsInstalled" -Value 0
 Stop-Process -Name Explorer
 
 # Create folders
-New-Item -Path "F:\" -Name "Projects" -ItemType "directory"
-New-Item -Path "F:\" -Name "SQL" -ItemType "directory"
-New-Item -Path "F:\SQL" -Name "Data" -ItemType "directory"
-New-Item -Path "F:\SQL" -Name "Logs" -ItemType "directory"
+New-Item -Path "F:\" -Name "Projects" -ItemType "directory" -Force
+New-Item -Path "F:\" -Name "SQL" -ItemType "directory" -Force
+New-Item -Path "F:\SQL" -Name "Data" -ItemType "directory" -Force
+New-Item -Path "F:\SQL" -Name "Logs" -ItemType "directory" -Force
+New-Item -Path "F:\SQL" -Name "Backups" -ItemType "directory" -Force
+
+# Get databases
+function Invoke-BlobItems {  
+    param (
+        [Parameter(Mandatory)]
+        [string]$URL,
+        [string]$Path = (Get-Location)
+    )
+
+    $uri = $URL.split('?')[0]
+    $sas = $URL.split('?')[1]
+
+    $newurl = $uri + "?restype=container&comp=list&" + $sas 
+
+    #Invoke REST API
+    $body = Invoke-RestMethod -uri $newurl
+
+    #cleanup answer and convert body to XML
+    $xml = [xml]$body.Substring($body.IndexOf('<'))
+
+    #use only the relative Path from the returned objects
+    $files = $xml.ChildNodes.Blobs.Blob.Name
+ 
+
+    #create folder structure and download files
+    $files | ForEach-Object { $_; New-Item (Join-Path $Path (Split-Path $_)) -ItemType Directory -ea SilentlyContinue | Out-Null
+        (New-Object System.Net.WebClient).DownloadFile($uri + "/" + $_ + "?" + $sas, (Join-Path $Path $_))
+     }
+}
+
+# Get db backups
+Invoke-BlobItems -URL $blob  -Path $path
+
+# Rename backups
+$files = Get-ChildItem -Path $path -Filter *.bak
+$regex = "(.*_)(.*)(_.*)"
+
+foreach($file in $files){
+    $file -match $regex | Out-Null
+    Rename-Item -Path "$path\$file" -NewName "$($matches[2]).bak"
+}
 
