@@ -1,6 +1,6 @@
 Param(
     $username,
-    $doamin
+    $domain
 )
 
 Add-LocalGroupMember -Group Administrators -Member "$domain\$username"
@@ -42,3 +42,10 @@ $UserKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8
 Set-ItemProperty -Path $AdminKey -Name "IsInstalled" -Value 0
 Set-ItemProperty -Path $UserKey -Name "IsInstalled" -Value 0
 Stop-Process -Name Explorer
+
+# Create folders
+New-Item -Path "F:\" -Name "Projects" -ItemType "directory"
+New-Item -Path "F:\" -Name "SQL" -ItemType "directory"
+New-Item -Path "F:\SQL" -Name "Data" -ItemType "directory"
+New-Item -Path "F:\SQL" -Name "Logs" -ItemType "directory"
+
