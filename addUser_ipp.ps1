@@ -12,6 +12,18 @@ Param(
     $vmContainer = "dev-vm-assests"
 )
 
+Out-File -Path D:\env.txt -Value "Username: $username" -Append
+Out-File -Path D:\env.txt -Value "domain: $domain" -Append
+Out-File -Path D:\env.txt -Value "dbUser: $dbUser" -Append
+Out-File -Path D:\env.txt -Value "dbPassword: $dbPassword" -Append
+Out-File -Path D:\env.txt -Value "Username: $path" -Append
+Out-File -Path D:\env.txt -Value "Username: $localAdminUser" -Append
+Out-File -Path D:\env.txt -Value "Username: $localAdminPassword" -Append
+Out-File -Path D:\env.txt -Value "Username: $sas" -Append
+Out-File -Path D:\env.txt -Value "Username: $blob" -Append
+Out-File -Path D:\env.txt -Value "Username: $dbContainer" -Append
+Out-File -Path D:\env.txt -Value "Username: $vmContainer" -Append
+
 $AdminGroup = [ADSI]"WinNT://$env:computername/Administrators,group"
 $User = [ADSI]"WinNT://$domain/$username,user"
 $AdminGroup.Add($User.Path)
