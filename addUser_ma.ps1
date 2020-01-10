@@ -8,22 +8,26 @@ Param(
     $localAdminPassword,
     $sas,
     $blob,
-    $dbContainer = "dev-vm",
+    $dbContainer = "dev-vm-ma-sql",
     $vmContainer = "dev-vm-assests"
 )
 
-add-content -Path f:\env.txt -Value "--------"
-add-content -Path f:\env.txt -Value "Username: $username"
-add-content -Path f:\env.txt -Value "domain: $domain"
-add-content -Path f:\env.txt -Value "dbUser: $dbUser"
-add-content -Path f:\env.txt -Value "dbPassword: $dbPassword"
-add-content -Path f:\env.txt -Value "Username: $path"
-add-content -Path f:\env.txt -Value "Username: $localAdminUser"
-add-content -Path f:\env.txt -Value "Username: $localAdminPassword"
-add-content -Path f:\env.txt -Value "Username: $sas"
-add-content -Path f:\env.txt -Value "Username: $blob"
-add-content -Path f:\env.txt -Value "Username: $dbContainer"
-Add-Content -Path f:\env.txt -Value "Username: $vmContainer"
+
+$poop = "sv=2019-02-02&ss=b&srt=sco&sp=rl&se=2021-01-09T16:44:05Z&st=2020-01-09T08:44:05Z&spr=https&sig="
+$sas = "$poop$sas"
+
+add-content -Path d:\env.txt -Value "--------"
+add-content -Path d:\env.txt -Value "Username: $username"
+add-content -Path d:\env.txt -Value "domain: $domain"
+add-content -Path d:\env.txt -Value "dbUser: $dbUser"
+add-content -Path d:\env.txt -Value "dbPassword: $dbPassword"
+add-content -Path d:\env.txt -Value "path: $path"
+add-content -Path d:\env.txt -Value "localAdminUser: $localAdminUser"
+add-content -Path d:\env.txt -Value "localAdminPassword: $localAdminPassword"
+add-content -Path d:\env.txt -Value "sas: $sas"
+add-content -Path d:\env.txt -Value "blob: $blob"
+add-content -Path d:\env.txt -Value "dbContainer: $dbContainer"
+Add-Content -Path d:\env.txt -Value "vmContainer: $vmContainer"
 
 $AdminGroup = [ADSI]"WinNT://$env:computername/Administrators,group"
 $User = [ADSI]"WinNT://$domain/$username,user"
@@ -52,6 +56,7 @@ choco install filezilla -y
 choco install nscp -y
 choco install notepadplusplus --force -y
 choco install winmerge -y
+choco install 7zip.install -y
 
 # IIS stuff
 choco install iis-arr --force -y
@@ -101,6 +106,13 @@ function Invoke-BlobItems {
 $url = "$blob/$dbContainer"
 Invoke-BlobItems -uri $url -sas $sas -Path $path
 
+$url = "$blob/$vmContainer"
+Invoke-BlobItems -uri $url -sas $sas -Path $path
+
+# Rename backups
+$files = Get-ChildItem -Path $path -Filter *.bak
+$regex = "(.*_)(.*)(_.*)"
+
 # Update SQL auth mode to Mixed via REG and restart the service
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQLServer" -Name LoginMode -Value 2
 Restart-Service -Name MSSQLSERVER
@@ -119,5 +131,3 @@ $encodedCommand = [Convert]::ToBase64String($bytes)
 $securePassword = ConvertTo-SecureString $localAdminPassword -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential "\$LocalAdminUser", $securePassword
 Start-Process powershell.exe  -Credential $credential -ArgumentList ("-encodedCommand $encodedCommand")
-
-# Restore DBs
