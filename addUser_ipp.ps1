@@ -12,18 +12,20 @@ Param(
     $vmContainer = "dev-vm-assests"
 )
 
+$sas = $sas.replace("|","&")
+
 add-content -Path d:\env.txt -Value "--------"
 add-content -Path d:\env.txt -Value "Username: $username"
 add-content -Path d:\env.txt -Value "domain: $domain"
 add-content -Path d:\env.txt -Value "dbUser: $dbUser"
 add-content -Path d:\env.txt -Value "dbPassword: $dbPassword"
-add-content -Path d:\env.txt -Value "Username: $path"
-add-content -Path d:\env.txt -Value "Username: $localAdminUser"
-add-content -Path d:\env.txt -Value "Username: $localAdminPassword"
-add-content -Path d:\env.txt -Value "Username: $sas"
-add-content -Path d:\env.txt -Value "Username: $blob"
-add-content -Path d:\env.txt -Value "Username: $dbContainer"
-Add-Content -Path d:\env.txt -Value "Username: $vmContainer"
+add-content -Path d:\env.txt -Value "path: $path"
+add-content -Path d:\env.txt -Value "localAdminUser: $localAdminUser"
+add-content -Path d:\env.txt -Value "localAdminPassword: $localAdminPassword"
+add-content -Path d:\env.txt -Value "sas: $sas"
+add-content -Path d:\env.txt -Value "blob: $blob"
+add-content -Path d:\env.txt -Value "dbContainer: $dbContainer"
+Add-Content -Path d:\env.txt -Value "vmContainer: $vmContainer"
 
 $AdminGroup = [ADSI]"WinNT://$env:computername/Administrators,group"
 $User = [ADSI]"WinNT://$domain/$username,user"
