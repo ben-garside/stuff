@@ -12,7 +12,9 @@ Param(
     $vmContainer = "dev-vm-assests"
 )
 
-$sas = $sas.replace("|","&")
+
+$poop = "sv=2019-02-02&ss=b&srt=sco&sp=rl&se=2021-01-09T16:44:05Z&st=2020-01-09T08:44:05Z&spr=https&sig="
+$sas = "$poop$sas"
 
 add-content -Path d:\env.txt -Value "--------"
 add-content -Path d:\env.txt -Value "Username: $username"
