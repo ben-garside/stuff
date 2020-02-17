@@ -139,3 +139,12 @@ $encodedCommand = [Convert]::ToBase64String($bytes)
 $securePassword = ConvertTo-SecureString $localAdminPassword -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential "\$LocalAdminUser", $securePassword
 Start-Process powershell.exe  -Credential $credential -ArgumentList ("-encodedCommand $encodedCommand")
+
+7z e 'F:\SQL\Backups\EPiServer 7.5.394.2.7z' -o'F:\SQL\Backups\EPI' -r -y
+$p = [Diagnostics.Process]::Start('F:\SQL\Backups\EPI\EPiServerCMS.msi','/quiet') 
+$p.WaitForExit()
+
+# Restore DBs
+$sqlrestore = "$blob/$vmContainer/restore.txt?$sas"
+$sqlcommand = (Invoke-webrequest -URI $sqlrestore).Content
+Invoke-Sqlcmd -Query $sqlcommand -Username "$dbUser" -Password "$dbPassword" -ConnectionTimeout 0 -QueryTimeout 0
