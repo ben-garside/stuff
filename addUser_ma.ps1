@@ -12,22 +12,42 @@ Param(
     $vmContainer = "dev-vm-assests"
 )
 
+#### FUNCTIONS ####
+
+function install-msi{
+    Param(
+        $msi
+    )
+    write-host "Installing $msi"
+    $p = [Diagnostics.Process]::Start($msi,'/quiet') 
+    $p.WaitForExit()
+    write-host "Installed $msi Exit: $($p.ExitCode)"
+}
+
+function Invoke-BlobItems {  
+    param (
+        [Parameter(Mandatory)]
+        [string]$uri,
+        [Parameter(Mandatory)]
+        [string]$sas,
+        [string]$Path = (Get-Location)
+    )
+
+    $newurl = $uri + "?restype=container&comp=list&" + $sas 
+    #Invoke REST API
+    $body = Invoke-RestMethod -uri $newurl
+    #cleanup answer and convert body to XML
+    $xml = [xml]$body.Substring($body.IndexOf('<'))
+    #use only the relative Path from the returned objects
+    $files = $xml.ChildNodes.Blobs.Blob.Name
+    #create folder structure and download files
+    $files | ForEach-Object { $_; New-Item (Join-Path $Path (Split-Path $_)) -ItemType Directory -ea SilentlyContinue | Out-Null
+        (New-Object System.Net.WebClient).DownloadFile($uri + "/" + $_ + "?" + $sas, (Join-Path $Path $_))
+     }
+}
 
 $poop = "sv=2019-02-02&ss=b&srt=sco&sp=rl&se=2021-01-09T16:44:05Z&st=2020-01-09T08:44:05Z&spr=https&sig="
 $sas = "$poop$sas"
-
-add-content -Path d:\env.txt -Value "--------"
-add-content -Path d:\env.txt -Value "Username: $username"
-add-content -Path d:\env.txt -Value "domain: $domain"
-add-content -Path d:\env.txt -Value "dbUser: $dbUser"
-add-content -Path d:\env.txt -Value "dbPassword: $dbPassword"
-add-content -Path d:\env.txt -Value "path: $path"
-add-content -Path d:\env.txt -Value "localAdminUser: $localAdminUser"
-add-content -Path d:\env.txt -Value "localAdminPassword: $localAdminPassword"
-add-content -Path d:\env.txt -Value "sas: $sas"
-add-content -Path d:\env.txt -Value "blob: $blob"
-add-content -Path d:\env.txt -Value "dbContainer: $dbContainer"
-Add-Content -Path d:\env.txt -Value "vmContainer: $vmContainer"
 
 $AdminGroup = [ADSI]"WinNT://$env:computername/Administrators,group"
 $User = [ADSI]"WinNT://$domain/$username,user"
@@ -87,29 +107,6 @@ New-Item -Path "F:\SQL" -Name "Data" -ItemType "directory" -Force
 New-Item -Path "F:\SQL" -Name "Log" -ItemType "directory" -Force
 New-Item -Path "F:\SQL" -Name "Backups" -ItemType "directory" -Force
 
-# Get databases
-function Invoke-BlobItems {  
-    param (
-        [Parameter(Mandatory)]
-        [string]$uri,
-        [Parameter(Mandatory)]
-        [string]$sas,
-        [string]$Path = (Get-Location)
-    )
-
-    $newurl = $uri + "?restype=container&comp=list&" + $sas 
-    #Invoke REST API
-    $body = Invoke-RestMethod -uri $newurl
-    #cleanup answer and convert body to XML
-    $xml = [xml]$body.Substring($body.IndexOf('<'))
-    #use only the relative Path from the returned objects
-    $files = $xml.ChildNodes.Blobs.Blob.Name
-    #create folder structure and download files
-    $files | ForEach-Object { $_; New-Item (Join-Path $Path (Split-Path $_)) -ItemType Directory -ea SilentlyContinue | Out-Null
-        (New-Object System.Net.WebClient).DownloadFile($uri + "/" + $_ + "?" + $sas, (Join-Path $Path $_))
-     }
-}
-
 # Get db backups
 $url = "$blob/$dbContainer"
 Invoke-BlobItems -uri $url -sas $sas -Path $path
@@ -140,11 +137,17 @@ $securePassword = ConvertTo-SecureString $localAdminPassword -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential "\$LocalAdminUser", $securePassword
 Start-Process powershell.exe  -Credential $credential -ArgumentList ("-encodedCommand $encodedCommand")
 
-7z e 'F:\SQL\Backups\EPiServer 7.5.394.2.7z' -o'F:\SQL\Backups\EPI' -r -y
-$p = [Diagnostics.Process]::Start('F:\SQL\Backups\EPI\EPiServerCMS.msi','/quiet') 
-$p.WaitForExit()
+# Install EpiServer
+$epiPath = 'F:\SQL\Backups\EPI'
+7z e 'F:\SQL\Backups\EPiServer 7.5.394.2.7z' -o$epiPath -r -y
+cd $epiPath
+$msis = Get-ChildItem -Path $epiPath -Filter *.msi
+foreach($msi in $msis){
+   install-msi $msi
+}
 
 # Restore DBs
 $sqlrestore = "$blob/$vmContainer/restore.txt?$sas"
 $sqlcommand = (Invoke-webrequest -URI $sqlrestore).Content
 Invoke-Sqlcmd -Query $sqlcommand -Username "$dbUser" -Password "$dbPassword" -ConnectionTimeout 0 -QueryTimeout 0
+
