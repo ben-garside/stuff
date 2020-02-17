@@ -139,7 +139,7 @@ Start-Process powershell.exe  -Credential $credential -ArgumentList ("-encodedCo
 
 # Install EpiServer
 $epiPath = 'F:\SQL\Backups\EPI'
-7z e 'F:\SQL\Backups\EPiServer 7.5.394.2.7z' -o$epiPath -r -y
+7z e 'F:\SQL\Backups\EPiServer 7.5.394.2.7z' -o"$epiPath" -r -y
 cd $epiPath
 $msis = Get-ChildItem -Path $epiPath -Filter *.msi
 foreach($msi in $msis){
