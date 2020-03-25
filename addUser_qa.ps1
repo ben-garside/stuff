@@ -20,3 +20,8 @@ choco install microsoftazurestorageexplorer -y
 choco install filezilla -y
 choco install nscp -y
 choco install notepadplusplus --force -y
+
+#QA Apps
+choco install eclipse -y
+choco install jdk8 -y
+choco install office365proplus -y
