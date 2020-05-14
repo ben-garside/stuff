@@ -4,4 +4,4 @@ choco install jdk8 -y
 choco install maven -y
 choco install googlechrome -y
 choco install selenium-chrome-driver -y
-Install-Module -Name Az -AllowClobber
+Install-Module -Name Az -AllowClobber -Force
