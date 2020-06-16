@@ -23,4 +23,4 @@ choco install postman -y
 choco install filezilla -y
 choco install nscp -y
 choco install nodejs.install -y
-choco install git
+choco install git -y
