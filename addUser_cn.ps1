@@ -1,6 +1,6 @@
 Param(
     $username,
-    $doamin
+    $domain
 )
 
 Add-LocalGroupMember -Group Administrators -Member "$domain\$username"
