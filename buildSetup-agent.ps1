@@ -21,7 +21,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 choco install jdk8 -y
 choco install maven -y
 choco install googlechrome -y
-choco install selenium-chrome-driver -y --pre
+choco install selenium-chrome-driver -y
 Install-Module -Name Az -AllowClobber -Force
 
 $Zipfile = $AgentFileName +".zip"
