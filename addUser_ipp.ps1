@@ -135,6 +135,6 @@ Start-Process powershell.exe  -Credential $credential -ArgumentList ("-encodedCo
 
 # Restore DBs
 $sqlrestore = "$blob/$vmContainer/restore.txt?$sas"
-$sqlcommand = (Invoke-webrequest -URI $sqlrestore).Content
+$sqlcommand = (Invoke-webrequest -URI $sqlrestore -UseBasicParsing).Content
 Invoke-Sqlcmd -Query $sqlcommand -Username "$dbUser" -Password "$dbPassword" -ConnectionTimeout 0 -QueryTimeout 0
 
