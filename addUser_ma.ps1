@@ -47,7 +47,7 @@ function Invoke-BlobItems {
 }
 
 write-host "#### START"
-$poop = "sv=2019-02-02&ss=b&srt=sco&sp=rl&se=2021-01-09T16:44:05Z&st=2020-01-09T08:44:05Z&spr=https&sig="
+$poop = "sv=2021-06-08&ss=b&srt=o&sp=rlx&se=2032-07-14T18:08:39Z&st=2022-07-14T10:08:39Z&spr=https&sig="
 $sas = "$poop$sas"
 
 write-host "#### Adding user to admin group"
@@ -74,7 +74,7 @@ if([System.Net.ServicePointManager]::SecurityProtocol.HasFlag([Net.SecurityProto
 
 Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
-write-host "#### Installling Apps via choco"
+write-host "#### Installing Apps via choco"
 # Install VS Pro
 choco install visualstudio2019professional -y
 choco install classic-shell -y
